@@ -1,10 +1,20 @@
-function sendForm(dataObj){
-  console.log('Форма отправлена', dataObj);
-  alert('Спасибо! Мы получили вашу заявку. Ожидайте звонка.');
-}
+function sendToTelegramBot(message) {
+  const BOT_TOKEN = "8268855853:AAEfLt7YSnbrJiU9AkgtWAswQwDLrCKKdmA";
+  const CHAT_ID = "855240763";
+  const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
-function isValidPhone(phone) {
-  return /^\d+$/.test(phone); 
+  fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: CHAT_ID,
+      text: message,
+      parse_mode: "HTML"
+    })
+  })
+  .then(res => res.json())
+  .then(data => console.log("Отправлено в Telegram:", data))
+  .catch(err => console.error("Ошибка Telegram:", err));
 }
 
 document.getElementById('quickForm').addEventListener('submit', function(e){
@@ -13,46 +23,14 @@ document.getElementById('quickForm').addEventListener('submit', function(e){
   const phone = document.getElementById('qphone').value.trim();
   const time = document.getElementById('qtime').value;
 
-  if (!phone) {
-    alert('Укажите телефон');
-    return;
-  }
   if (!isValidPhone(phone)) {
     alert('Телефон должен содержать только цифры');
     return;
   }
 
   sendForm({name, phone, time, from: 'quickForm'});
+
+  sendToTelegramBot(`📩 <b>Новая заявка</b>\n👤 Имя: ${name}\n📞 Телефон: ${phone}\n⏰ Время: ${time}`);
+
   this.reset();
-});
-
-document.getElementById('mainForm').addEventListener('submit', function(e){
-  e.preventDefault();
-  const name = document.getElementById('name').value.trim();
-  const phone = document.getElementById('phone').value.trim();
-  const device = document.getElementById('device').value.trim();
-  const note = document.getElementById('note').value.trim();
-
-  if (!name || !phone) {
-    alert('Пожалуйста, укажите имя и телефон');
-    return;
-  }
-  if (!isValidPhone(phone)) {
-    alert('Телефон должен содержать только цифры');
-    return;
-  }
-
-  sendForm({name, phone, device, note, from: 'mainForm'});
-  this.reset();
-});
-
-document.getElementById('callMeBtn').addEventListener('click', function(){
-  const phone = prompt('Введите номер телефона для обратного звонка:');
-  if (phone) {
-    if (!isValidPhone(phone)) {
-      alert('Телефон должен содержать только цифры');
-      return;
-    }
-    alert('Спасибо! Мы перезвоним по номеру: ' + phone);
-  }
 });
